@@ -17,16 +17,13 @@
 
     * { box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
-    }
-
     body {
       margin: 0;
       background: var(--bg);
       color: var(--criteo-orange);
       font-family: 'Space Grotesk', 'Segoe UI', -apple-system, sans-serif;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -37,7 +34,9 @@
     .screen {
       width: 100vw;
       min-height: 100vh;
+      min-height: 100dvh;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       padding: 28px 24px 36px;
       display: flex;
@@ -727,6 +726,7 @@
     let wakeLock = null;
     let countdownTimer = null;
     let lastWord = '';
+    let fitRerunTimers = [];
 
     const getRandomWord = () => {
       if (words.length === 0) return 'Product';
@@ -847,6 +847,15 @@
       target.style.fontSize = `${best}px`;
     };
 
+    const scheduleFit = () => {
+      fitWordToViewport();
+      fitRerunTimers.forEach(clearTimeout);
+      fitRerunTimers = [
+        setTimeout(fitWordToViewport, 160),
+        setTimeout(fitWordToViewport, 360),
+      ];
+    };
+
     const scrollWordIntoView = () => {
       forceScrollTop();
     };
@@ -883,7 +892,7 @@
       scrollWordIntoView();
       wordDisplay.textContent = word;
       setRevealing(true);
-      fitWordToViewport();
+      scheduleFit();
       generateBtn.disabled = false;
       generateBtn.textContent = 'Generate';
     };
@@ -924,22 +933,29 @@
     fullscreenBtn.addEventListener('click', toggleFullscreen);
     document.addEventListener('fullscreenchange', () => {
       syncFullscreenButton();
-      fitWordToViewport();
+      scheduleFit();
     });
     document.addEventListener('webkitfullscreenchange', () => {
       syncFullscreenButton();
-      fitWordToViewport();
+      scheduleFit();
     });
 
     window.addEventListener('resize', () => {
       updateOrientationNote();
-      fitWordToViewport();
+      scheduleFit();
     });
+    window.addEventListener('orientationchange', () => {
+      updateOrientationNote();
+      scheduleFit();
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', scheduleFit);
+    }
     updateOrientationNote();
     syncFullscreenButton();
-    fitWordToViewport();
+    scheduleFit();
     if (document.fonts?.ready) {
-      document.fonts.ready.then(fitWordToViewport);
+      document.fonts.ready.then(scheduleFit);
     }
   </script>
 </body>
