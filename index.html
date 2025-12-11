@@ -64,8 +64,8 @@
       text-transform: uppercase;
       width: 100%;
       max-width: 1200px;
-      overflow-wrap: break-word;
-      word-break: break-word;
+      overflow-wrap: normal;
+      word-break: keep-all;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -813,6 +813,10 @@
       const screen = document.querySelector('.screen');
       if (!target || !screen) return;
 
+      // Prefer keeping words intact; only allow breaking if nothing fits.
+      target.style.wordBreak = 'keep-all';
+      target.style.overflowWrap = 'normal';
+
       const screenStyles = getComputedStyle(screen);
       const paddingX = parseFloat(screenStyles.paddingLeft) + parseFloat(screenStyles.paddingRight);
       const paddingY = parseFloat(screenStyles.paddingTop) + parseFloat(screenStyles.paddingBottom);
@@ -858,6 +862,14 @@
       }
 
       target.style.fontSize = `${best}px`;
+
+      // If even the smallest size can't fit, allow breaking as a last resort.
+      const { scrollWidth, scrollHeight } = target;
+      const overflowed = scrollWidth > maxWidth || scrollHeight > maxHeight;
+      if (overflowed) {
+        target.style.wordBreak = 'break-word';
+        target.style.overflowWrap = 'break-word';
+      }
     };
 
     const scheduleFit = () => {
