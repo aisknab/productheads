@@ -691,7 +691,6 @@
     let wakeLock = null;
     let countdownTimer = null;
     let lastWord = '';
-    let generationCount = 0;
 
     const getRandomWord = () => {
       if (words.length === 0) return 'Product';
@@ -737,7 +736,14 @@
       document.body.classList.toggle('revealing', isRevealing);
     };
 
+    const scrollWordIntoView = () => {
+      const target = document.querySelector('.screen') || document.body;
+      target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    };
+
     const showWord = (word) => {
+      scrollWordIntoView();
       wordDisplay.textContent = word;
       setRevealing(true);
       generateBtn.disabled = false;
@@ -767,10 +773,7 @@
       if (countdownTimer) {
         clearTimeout(countdownTimer);
       }
-      generationCount += 1;
-      if (generationCount >= 2) {
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Reset scroll so the reveal fills the screen
-      }
+      scrollWordIntoView(); // Reset scroll so the reveal fills the screen
       setRevealing(false);
       generateBtn.disabled = true;
       generateBtn.textContent = 'Counting...';
