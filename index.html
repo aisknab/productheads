@@ -37,6 +37,8 @@
     .screen {
       width: 100vw;
       min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       padding: 28px 24px 36px;
       display: flex;
       flex-direction: column;
@@ -743,6 +745,29 @@
       document.body.classList.toggle('revealing', isRevealing);
     };
 
+    const forceScrollTop = () => {
+      const doScroll = () => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+
+      doScroll();
+      requestAnimationFrame(doScroll);
+      setTimeout(doScroll, 30);
+
+      let attempts = 0;
+      const maxAttempts = 5;
+      const interval = setInterval(() => {
+        doScroll();
+        attempts += 1;
+        const atTop = (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) === 0;
+        if (atTop || attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }, 40);
+    };
+
     const fitWordToViewport = () => {
       const target = wordDisplay;
       const padding = 24; // account for page padding
@@ -772,14 +797,7 @@
     };
 
     const scrollWordIntoView = () => {
-      const scrollTop = () => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      };
-      scrollTop();
-      requestAnimationFrame(scrollTop);
-      setTimeout(scrollTop, 50); // ensure after reflow/timers
+      forceScrollTop();
     };
 
     const showWord = (word) => {
