@@ -58,6 +58,8 @@
       text-transform: uppercase;
       width: 100%;
       max-width: 1200px;
+      overflow-wrap: break-word;
+      word-break: break-word;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -736,6 +738,34 @@
       document.body.classList.toggle('revealing', isRevealing);
     };
 
+    const fitWordToViewport = () => {
+      const target = wordDisplay;
+      const padding = 24; // account for page padding
+      const maxWidth = window.innerWidth - padding * 2;
+      const maxHeight = window.innerHeight - padding * 2;
+      const minSize = 32;
+      const maxSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+
+      let low = minSize;
+      let high = maxSize;
+      let best = minSize;
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        target.style.fontSize = `${mid}px`;
+        const { scrollWidth, scrollHeight } = target;
+        const fits = scrollWidth <= maxWidth && scrollHeight <= maxHeight;
+        if (fits) {
+          best = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+
+      target.style.fontSize = `${best}px`;
+    };
+
     const scrollWordIntoView = () => {
       const target = document.querySelector('.screen') || document.body;
       target.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -746,6 +776,7 @@
       scrollWordIntoView();
       wordDisplay.textContent = word;
       setRevealing(true);
+      fitWordToViewport();
       generateBtn.disabled = false;
       generateBtn.textContent = 'Generate';
     };
@@ -784,8 +815,15 @@
 
     generateBtn.addEventListener('click', startSequence);
 
-    window.addEventListener('resize', updateOrientationNote);
+    window.addEventListener('resize', () => {
+      updateOrientationNote();
+      fitWordToViewport();
+    });
     updateOrientationNote();
+    fitWordToViewport();
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(fitWordToViewport);
+    }
   </script>
 </body>
 </html>
