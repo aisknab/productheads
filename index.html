@@ -770,11 +770,35 @@
 
     const fitWordToViewport = () => {
       const target = wordDisplay;
-      const padding = 24; // account for page padding
-      const maxWidth = window.innerWidth - padding * 2;
-      const maxHeight = window.innerHeight - padding * 2;
-      const minSize = 32;
-      const maxSize = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+      const screen = document.querySelector('.screen');
+      if (!target || !screen) return;
+
+      const screenStyles = getComputedStyle(screen);
+      const paddingX = parseFloat(screenStyles.paddingLeft) + parseFloat(screenStyles.paddingRight);
+      const paddingY = parseFloat(screenStyles.paddingTop) + parseFloat(screenStyles.paddingBottom);
+      const gap = parseFloat(screenStyles.rowGap || screenStyles.gap || 0);
+
+      const visibleFlowChildren = Array.from(screen.children).filter((el) => {
+        const pos = getComputedStyle(el).position;
+        return el.offsetParent !== null && pos !== 'absolute' && pos !== 'fixed';
+      });
+
+      const siblingsHeight = visibleFlowChildren
+        .filter((el) => el !== target)
+        .reduce((total, el) => total + el.getBoundingClientRect().height, 0);
+
+      const gapCount = Math.max(visibleFlowChildren.length - 1, 0);
+      const gapTotal = gapCount * gap;
+
+      const minSize = 28;
+      const maxWidth = Math.max(screen.clientWidth - paddingX, minSize);
+      const availableHeight = screen.clientHeight - paddingY - siblingsHeight - gapTotal;
+      if (availableHeight <= 0) {
+        target.style.fontSize = `${minSize}px`;
+        return;
+      }
+      const maxHeight = Math.max(availableHeight, minSize);
+      const maxSize = Math.max(minSize, Math.min(maxWidth, maxHeight));
 
       let low = minSize;
       let high = maxSize;
