@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Product Heads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --criteo-orange: #ff5a00;
+      --bg: #000;
+      --muted: rgba(255, 90, 0, 0.65);
+      --text: #fff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--criteo-orange);
+      font-family: 'Space Grotesk', 'Segoe UI', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .screen {
+      width: 100vw;
+      min-height: 100vh;
+      padding: 28px 24px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: clamp(13px, 1.8vw, 16px);
+    }
+
+    .word {
+      margin: 0;
+      font-size: clamp(72px, 18vw, 280px);
+      font-weight: 700;
+      line-height: 0.95;
+      text-transform: uppercase;
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex: 1;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 90, 0, 0.35);
+      background: rgba(255, 90, 0, 0.08);
+      color: var(--criteo-orange);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .cta:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .cta:not(:disabled):active {
+      transform: scale(0.98);
+      background: rgba(255, 90, 0, 0.15);
+      border-color: rgba(255, 90, 0, 0.55);
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .orientation {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      padding: 8px 12px;
+      border: 1px dashed rgba(255, 90, 0, 0.35);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      background: rgba(255, 90, 0, 0.05);
+    }
+
+    .countdown {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 140ms ease;
+      z-index: 10;
+    }
+
+    .countdown.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .countdown-number {
+      font-size: clamp(120px, 20vw, 320px);
+      font-weight: 800;
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(255, 90, 0, 0.4);
+    }
+
+    .countdown-logo {
+      height: clamp(42px, 7vw, 70px);
+      max-width: 70vw;
+      filter: drop-shadow(0 0 16px rgba(255, 90, 0, 0.35));
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: -6px;
+      min-height: 18px;
+    }
+
+    .logo-word {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    @media (orientation: portrait) {
+      .orientation {
+        border-style: solid;
+        color: var(--criteo-orange);
+        background: rgba(255, 90, 0, 0.12);
+      }
+    }
+
+    .meta {
+      transition: opacity 140ms ease;
+    }
+
+    .revealing .meta {
+      display: none;
+    }
+
+    .revealing .word {
+      font-size: clamp(88px, 22vw, 320px);
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <div class="badge meta">Product Heads</div>
+    <p class="word" id="wordDisplay">Ready?</p>
+    <button class="cta" id="generateBtn">Generate</button>
+    <div class="status meta" id="statusMsg"></div>
+    <p class="note meta">
+      Tap Generate, hold your phone above your head, and rotate to landscape for the biggest word. We'll try to keep your screen awake while you're playing.
+    </p>
+    <div class="orientation meta" id="orientationMsg">Best in landscape</div>
+  </main>
+
+  <section class="countdown" id="countdown">
+    <img class="countdown-logo" src="criteo-logo.svg" alt="Criteo logo" loading="lazy">
+    <div class="countdown-number" id="countdownNumber">3</div>
+  </section>
+
+  <script>
+    const words = [
+      'Vacuum',
+      'Electric Toothbrush',
+      'Hair Dryer',
+      'Desk Lamp',
+      'Bluetooth Speaker',
+      'Air Fryer',
+      'Instant Camera',
+      'Yoga Mat',
+      'Running Shoes',
+      'Smart Watch',
+      'Fanny Pack',
+      'Noise Cancelling Headphones',
+      'Espresso Machine',
+      'Reusable Bottle',
+      'Hoodie',
+      'Backpack',
+      'Laptop Stand',
+      'Desk Chair',
+      'Throw Blanket',
+      'Projector',
+      'Smart Bulb',
+      'Portable Charger',
+      'Sunglasses',
+      'Cooking Pan',
+      'Cast Iron Skillet',
+      'Wireless Mouse',
+      'Mechanical Keyboard',
+      'Travel Pillow',
+      'Scented Candle',
+      'Bike Helmet'
+    ];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const generateBtn = document.getElementById('generateBtn');
+    const countdown = document.getElementById('countdown');
+    const countdownNumber = document.getElementById('countdownNumber');
+    const statusMsg = document.getElementById('statusMsg');
+    const orientationMsg = document.getElementById('orientationMsg');
+
+    let wakeLock = null;
+    let countdownTimer = null;
+    let lastWord = '';
+
+    const getRandomWord = () => {
+      if (words.length === 0) return 'Product';
+      if (words.length === 1) return words[0];
+      let next = words[Math.floor(Math.random() * words.length)];
+      while (next === lastWord) {
+        next = words[Math.floor(Math.random() * words.length)];
+      }
+      lastWord = next;
+      return next;
+    };
+
+    const updateOrientationNote = () => {
+      const landscape = window.matchMedia('(orientation: landscape)').matches;
+      orientationMsg.textContent = landscape ? 'You are in landscape' : 'Rotate for landscape';
+      orientationMsg.style.color = landscape ? 'var(--muted)' : 'var(--criteo-orange)';
+      orientationMsg.style.borderStyle = landscape ? 'dashed' : 'solid';
+    };
+
+    const requestWakeLock = async () => {
+      if (!('wakeLock' in navigator)) {
+        statusMsg.textContent = 'Screen wake lock not supported on this device.';
+        return;
+      }
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        statusMsg.textContent = 'Keeping your screen awake.';
+        wakeLock.addEventListener('release', () => {
+          statusMsg.textContent = 'Screen may dim — tap Generate to keep it awake.';
+        });
+      } catch (err) {
+        statusMsg.textContent = 'Wake lock failed: ' + err.message;
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    });
+
+    const setRevealing = (isRevealing) => {
+      document.body.classList.toggle('revealing', isRevealing);
+    };
+
+    const showWord = (word) => {
+      wordDisplay.textContent = word;
+      setRevealing(true);
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate';
+    };
+
+    const startCountdown = (word) => {
+      countdown.classList.add('visible');
+      let count = 3;
+      countdownNumber.textContent = count;
+
+      const tick = () => {
+        count -= 1;
+        if (count === 0) {
+          countdown.classList.remove('visible');
+          showWord(word);
+          return;
+        }
+        countdownNumber.textContent = count;
+        countdownTimer = setTimeout(tick, 1000);
+      };
+
+      countdownTimer = setTimeout(tick, 1000);
+    };
+
+    const startSequence = async () => {
+      if (countdownTimer) {
+        clearTimeout(countdownTimer);
+      }
+      setRevealing(false);
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Counting...';
+      await requestWakeLock();
+      const nextWord = getRandomWord();
+      startCountdown(nextWord);
+    };
+
+    generateBtn.addEventListener('click', startSequence);
+
+    window.addEventListener('resize', updateOrientationNote);
+    updateOrientationNote();
+  </script>
+</body>
+</html>
