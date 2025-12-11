@@ -17,6 +17,10 @@
 
     * { box-sizing: border-box; }
 
+    html, body {
+      height: 100%;
+    }
+
     body {
       margin: 0;
       background: var(--bg);
@@ -27,6 +31,7 @@
       align-items: center;
       justify-content: center;
       touch-action: manipulation;
+      overflow: hidden;
     }
 
     .screen {
@@ -767,9 +772,14 @@
     };
 
     const scrollWordIntoView = () => {
-      const target = document.querySelector('.screen') || document.body;
-      target.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      const scrollTop = () => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+      scrollTop();
+      requestAnimationFrame(scrollTop);
+      setTimeout(scrollTop, 50); // ensure after reflow/timers
     };
 
     const showWord = (word) => {
