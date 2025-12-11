@@ -143,6 +143,30 @@
       pointer-events: auto;
     }
 
+    .fullscreen-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 12;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 90, 0, 0.35);
+      background: rgba(255, 90, 0, 0.08);
+      color: var(--criteo-orange);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .fullscreen-btn:active {
+      transform: scale(0.98);
+      background: rgba(255, 90, 0, 0.15);
+      border-color: rgba(255, 90, 0, 0.55);
+    }
+
     .countdown-number {
       font-size: clamp(120px, 20vw, 320px);
       font-weight: 800;
@@ -200,6 +224,8 @@
     </p>
     <div class="orientation meta" id="orientationMsg">Best in landscape</div>
   </main>
+
+  <button class="fullscreen-btn" id="fullscreenBtn" type="button">Full Screen</button>
 
   <section class="countdown" id="countdown">
     <img class="countdown-logo" src="criteo-logo.svg" alt="Criteo logo" loading="lazy">
@@ -696,6 +722,7 @@
     const countdownNumber = document.getElementById('countdownNumber');
     const statusMsg = document.getElementById('statusMsg');
     const orientationMsg = document.getElementById('orientationMsg');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     let wakeLock = null;
     let countdownTimer = null;
@@ -824,6 +851,34 @@
       forceScrollTop();
     };
 
+    const syncFullscreenButton = () => {
+      const isFullscreen = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      fullscreenBtn.textContent = isFullscreen ? 'Exit Full Screen' : 'Full Screen';
+    };
+
+    const toggleFullscreen = async () => {
+      try {
+        const root = document.documentElement;
+        const enter = root.requestFullscreen || root.webkitRequestFullscreen;
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+
+        if (!enter) {
+          statusMsg.textContent = 'Fullscreen not supported on this browser.';
+          return;
+        }
+
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          await exit?.call(document);
+        } else {
+          await enter.call(root);
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Fullscreen blocked: ' + err.message;
+      } finally {
+        syncFullscreenButton();
+      }
+    };
+
     const showWord = (word) => {
       scrollWordIntoView();
       wordDisplay.textContent = word;
@@ -866,12 +921,22 @@
     };
 
     generateBtn.addEventListener('click', startSequence);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', () => {
+      syncFullscreenButton();
+      fitWordToViewport();
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      syncFullscreenButton();
+      fitWordToViewport();
+    });
 
     window.addEventListener('resize', () => {
       updateOrientationNote();
       fitWordToViewport();
     });
     updateOrientationNote();
+    syncFullscreenButton();
     fitWordToViewport();
     if (document.fonts?.ready) {
       document.fonts.ready.then(fitWordToViewport);
