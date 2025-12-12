@@ -56,6 +56,8 @@
       justify-content: flex-start;
       gap: 12px;
       flex-wrap: wrap;
+      padding-right: 156px;
+      padding-right: calc(156px + env(safe-area-inset-right));
     }
 
     .language-picker {
@@ -268,7 +270,7 @@
 </head>
 <body>
   <main class="screen">
-    <div class="top-row">
+    <div class="top-row meta">
       <div class="badge meta">Product Heads</div>
       <label class="language-picker" for="languageSelect">
         <span id="languageLabel">Language</span>
@@ -1138,9 +1140,13 @@
       target.style.overflowWrap = 'normal';
 
       const screenStyles = getComputedStyle(screen);
-      const paddingX = parseFloat(screenStyles.paddingLeft) + parseFloat(screenStyles.paddingRight);
-      const paddingY = parseFloat(screenStyles.paddingTop) + parseFloat(screenStyles.paddingBottom);
-      const gap = parseFloat(screenStyles.rowGap || screenStyles.gap || 0);
+      const paddingLeft = parseFloat(screenStyles.paddingLeft) || 0;
+      const paddingRight = parseFloat(screenStyles.paddingRight) || 0;
+      const paddingTop = parseFloat(screenStyles.paddingTop) || 0;
+      const paddingBottom = parseFloat(screenStyles.paddingBottom) || 0;
+      const paddingX = paddingLeft + paddingRight;
+      const paddingY = paddingTop + paddingBottom;
+      const gap = parseFloat(screenStyles.rowGap || screenStyles.gap || 0) || 0;
 
       const visibleFlowChildren = Array.from(screen.children).filter((el) => {
         const pos = getComputedStyle(el).position;
